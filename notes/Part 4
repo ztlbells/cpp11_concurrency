@@ -1,0 +1,5 @@
+Part 4
+1. returning values from threads
+	- promise/future combo
+2. passing exceptions between thread
+3. simple tasks:async
