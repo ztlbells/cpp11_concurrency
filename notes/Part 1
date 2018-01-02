@@ -1,0 +1,35 @@
+Part 1
+
+1. fork and join
+
+2. lambda function:
+	==================================================================
+	std::thread([]()
+	{
+		cout << "from thread" << endl;
+	});
+	==================================================================
+
+3. barrier: join multiple threads at the same time
+	==================================================================
+	vector<std::thread> workers;
+	for(int i = 0; i < 10; i++){
+		workers.push_back(std::thread([]()	
+						{
+								std::cout << "from thread" << endl;
+						}));
+	}
+	std::cout << "from main" << endl;
+	std::for_each(workers.begin(), workders.end(), [](std::thread &th){
+		th.join();
+	});
+	==================================================================
+
+	- Output has interleavings!(output is not deterministic.)
+	- Pass i to lambda function by:
+		std::thread([i](){..});
+		which pass a copy of i to lambda function and i will become private data of the function object;
+		aka **CLOSURE** -> a lambda that captures external variables.
+		
+
+
