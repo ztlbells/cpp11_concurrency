@@ -1,0 +1,23 @@
+Part 6
+1. recap: massive parallel directory listing
+	- each task just returns the future
+	- for each subdir, create a new thread/task
+	- produce a huge number of task
+2. how to make the # of threads bounded?
+	- vector<std::string> files, vector<path> dirs;
+	- in main: vector<path> dirToDo;
+		- for each loop, create bounded # of tasks based upon dirToDo.
+		- create a barrier
+3. ** MapReduce ** (moving data from threads)
+	- processing large datasets in parallel
+	- input list
+		- in general, list of key/value pairs
+		- keys used for distributing data to tasks/machines
+	- for each element: Map
+		- perform the same transformation, emit results
+		- in general, result is also a key/value pair
+	- barrier (wait for all tasks to finish)
+	- sort results by key producing a list of (key, list of values) pairs
+	- for each element: Reduce
+		- perform the same transformation
+	- final merge 

@@ -1,0 +1,25 @@
+Part 8
+1. Passing arguments to threads
+	- By value
+		- safe, but make sure a deep copy is made..
+	- By move
+		- larger object, safe, as long as strict (deep) adherence to move semantics
+	(2 above do not introduce sharing status)
+	- By const reference
+		- safe, as long as object is guaranteed deep-immutable (nobody has the right to access the data)
+		- the thread does not modify it
+		- take care of data race! (parent thread is writing the data while the child thread is reading the data)
+		- make sure that the immutability is deep (in c++, const is shallow, it does not propagate thru pointers or references inside the object)
+	- By non-const refernce
+		- safe as long as the object is a MONITOR
+
+2. pitfall
+	- composing a monitor(one monitor has the access to another monitor, etc.)
+		- easily to get into deadlock
+	- dangerous optimization
+		- when a data resource is shared by multiple threads/only one thread, the lifetime of a mutex is divided into epochs which are single-threaded and multi-threaded.
+		- for single-threaded methods, we don't actually need lock guard.
+		- we can just simply remove the locks from these methods.
+
+		- This optimization could be dangerous if run the tasks in parallel!!!
+			-"Jinx" => find data race

@@ -1,0 +1,107 @@
+Part 9
+Conditional variable
+	- an object shared between two or more threads. 
+	- Producer: notify(), Cosumer: wait()
+		- wait before notify: consumer will be waked up after being notified.
+		- wait after notify: notification is lost, consumer does not have notification in memory.
+		- notify_one, notify_all
+		- spurious wakeup	
+Shared State Protocol
+
+Message_passing paradigm
+	- each thread is a server thread, wait for a job (from message queue)
+	- when finding directories and files, pushing dirs and files into message queues.
+	- server here is both producer (pushing msg into queues) and consumer (wait for jobs)
+
+
+#include <deque>
+#include <condition_variable>
+
+template <class T>
+class MsgQueue{
+	std::deque<T> _queue;
+	std::condition_variable _cond;
+	std::mutex _mutex;
+	//conditional variable needs a mutex
+public:
+	void send(T &&msg){
+		std::lock_guard<std::mutex> lck(_mutex);
+		_queue.push_front(std::move(msg));
+		_cond.notify_one();
+	}
+
+	T receive(){
+		std::unique_lock<std::mutex> lck(mutex);
+		_cond.wait(lck, [this]{
+			return !_queue.empty();
+		});
+		T msg = std::move(_queue.back());
+		_queue.pop_back();
+		return msg;
+	}
+
+};
+
+// server
+void listDirServer(MsgQueue<path> &dirQueue, MsgQueue<std::string> &fileQueue){
+	for(;;){
+		path dir = dirQueue.receive();
+		// if the queue is empty, this will be blocked until a new message is avaiable
+		// now ready to list
+		for(directory_iterator it(dir); it != directory_iterator(); ++it){
+			if(it -> isDirectory()){
+				dirQueue.send(it -> path());
+			} else {
+				fileQueue.send(it -> path(). leaf());
+			}
+		}
+	}
+}
+
+// print server
+void printServer(MsgQueue<std::string> &nameQueue){
+	for(;;){
+		std::string name = nameQueue.receive();
+		std::cout << name << std::endl;
+	}
+}
+
+// create queues and launch server
+void listTree(path &&rootDir){
+	MsgQueue<path> dirQueue;
+	MsgQueue<std::string> fileQueue;
+
+	dirQueue.send(std::move(rootDir));
+	std::vector<std::future<void>> futures;
+	for(int i = 0; i < NUM_THREADS; i++){
+		futures.push_back(std::async(std::launch::async), &listDirServer,
+			std::ref(dirQueue),
+			std::ref(fileQueue));
+	}
+
+	futures.push_back(std::async(std::launch::async), &lprintServer,
+			std::ref(dirQueue),
+			std::ref(fileQueue));
+
+	try{
+		while(!futures.empty()){
+			auto ftr = std::move(futures.back());
+			futures.pop_back();
+			ftr.get();
+		}
+	} catch(std::exception &e) {
+		std::cout << "Exception " << e.what() << std::endl;
+	} catch(...){
+
+	}
+}
+
+1. how to decide job is done?
+	- msg queue is empty
+		- but some server can still be active!
+	- none of the servers is active
+		- count the # of active servers
+
+2. how to break from the loop since the current code will lead to infinite # of loops
+	- detect empty string
+

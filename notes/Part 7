@@ -1,0 +1,37 @@
+Part 7
+0. move sematic: transfer ownership
+	Result(Result && r): dirs(std::move(r.dirs)), files(std::move(r.files)){}
+	Result & operator = (Result && r){
+		dirs = std::move(r.dirs);
+		files = std::move(.files);
+		return *this;
+	}
+
+1. data sharing -> shared variable, sync
+	- how to avoid data race?
+	- monitor!
+	// thread safe
+	class MonitorResult{
+		Result _result;
+		std::mutex _mutex;
+		// mutual exclusion
+	public:
+		void putFile(std::string &&file){
+			/*_mutex.lock();
+			_result.files.push_back(file);
+			_mutex.unlock();*/
+			// In real world, nobody calls mutex.lock and mutex.unlock, as
+			// if there is an exceptioon before unlocking, the mutex will be 
+			// permanently locked.
+			// AKA Resource Acquisition Is Initialization(RAII)
+			// - make sure that resource aquired can be released correctly
+			std::lock_guard<std::mutex> lck(_mutex);
+			_result.files.push_back(file);
+
+		}
+
+		void putDir(path &&pth){
+			std::lock_guard<std::mutex> lck(_mutex);
+			_result.dirs.push_back(pth);
+		}
+	};
