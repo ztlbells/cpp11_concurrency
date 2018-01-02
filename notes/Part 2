@@ -1,1 +1,21 @@
 Part 2
+1. boost thread
+2. move semantics of thread
+	- unique objects
+	- (1) not making copies to optimize (e.g. when tackling with R-value, it is not worthwhile to (deep) copy it, instead we can just point it.)
+	- (2) resource management (allocate memory & deallocate memory)
+	- (3) concurrency： different threads sharing one var (unsafe!)
+3. thread destructor
+4. not joinable thread state
+5. detached thread - usually a bad idea
+	- daemon thread
+6. passing arguments to threads 
+	- by value
+		- f(x); or f(S());
+	- by reference(const, immutable, mutable)
+		- void f(S &s); f(x) ok, f(S()) error (temporary val cannot be modified).
+		- void f(S const &s), both ok.
+		- void f(S && s); f(x) error, f(S()) ok;
+			- how can an R-value matter? modify the behavior of destructor..
+	- danger of passing ref to thread:
+		- lifetime of variable (the variables might be deconstructed after the function is ended)
