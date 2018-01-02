@@ -1,0 +1,36 @@
+Part 5
+1. Async vs Thread
+	- creating a separate thread
+		- async(launch::async, &f, args..)
+		- but also async(launch::deffered, &f, args..)
+		- default: launch::async | launch::deffered
+	- arguments
+		- function ptr, function object, lambda
+		- variable number of arguments of arbitrary types
+		- launch directive
+	- built in future
+		- no need for promise::set_value() 
+		or promise::set_exception, just return and throw
+		- can be ignored - void future
+	- still missing 
+		- Task-based concurrency
+2. Task-based concurrency
+	- Problem: how many threads to use?
+	- Solution: 
+		- Programmer: what can be run in parallel
+		- System: What will be run in parallel
+	- Thread pools, work-stealing queues
+
+	**TASKS-BASED v.s. THREAD_BASED PROGRAMMING**
+		- Abstraction level
+			- Threads: low
+			- Tasks: high
+		- Resource usage
+			- Threads: heavy-weight (call os, allocate stack, kernel ds, tearing down a thread is expensive)
+			- Tasks: lightweight (user level thread, no need for preemption, reuse thread pools,)
+		- Problem solving
+			- Thread: improve latency
+			- Tasks: improve throughput
+3. Massively parallel directory listing
+(!!!) for each directory, create a thread to find all files under it.
+	- new idea: postpone the decision wheter a task is run async or sync till the last moment (default)
